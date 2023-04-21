@@ -62,9 +62,10 @@ class ValueIterationAgent(ValueEstimationAgent):
     def runValueIteration(self):
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
+        
 
 
-    def getValue(self, state):
+    def getValue(self, state): 
         """
           Return the value of the state (computed in __init__).
         """
