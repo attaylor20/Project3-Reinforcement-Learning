@@ -62,6 +62,12 @@ class ValueIterationAgent(ValueEstimationAgent):
     def runValueIteration(self):
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
+        for i in range(self.iterations):
+            iterationValues = util.Counter()
+            iterationStates = self.mdp.getStates()
+            for state in iterationStates:
+                if self.mdp.isTerminal(state):
+                    self.value[state] = self.mdp.getReward(state, )
         
 
 
@@ -78,6 +84,15 @@ class ValueIterationAgent(ValueEstimationAgent):
           value function stored in self.values.
         """
         "*** YOUR CODE HERE ***"
+
+        actions = self.mdp.getTransitionStatesAndProbs(state, action)
+        totalValue = 0
+
+        for nextState, probability in actions:
+            reward = self.mdp.getRward(state, action, nextState)
+            totalValue += probability*(reward + self.discount*self.values[nextState]) # end of the bellman equation
+        return totalValue
+
         util.raiseNotDefined()
 
     def computeActionFromValues(self, state):
@@ -90,6 +105,15 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
+        # Iterate through each value, action combo
+        actionValue = util.Counter()
+        actions = self.mdp.getPossibleActions(state)
+        for action in actions:
+            actionValue[action] = self.computeQValueFromValues(state, action)
+        return actionValue.argMax()
+
+
+        
         util.raiseNotDefined()
 
     def getPolicy(self, state):
@@ -128,9 +152,12 @@ class AsynchronousValueIterationAgent(ValueIterationAgent):
               mdp.isTerminal(state)
         """
         ValueIterationAgent.__init__(self, mdp, discount, iterations)
+        
 
     def runValueIteration(self):
         "*** YOUR CODE HERE ***"
+
+        
 
 class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
     """
