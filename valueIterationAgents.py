@@ -67,7 +67,11 @@ class ValueIterationAgent(ValueEstimationAgent):
             iterationStates = self.mdp.getStates()
             for state in iterationStates:
                 if self.mdp.isTerminal(state):
-                    self.value[state] = self.mdp.getReward(state, )
+                    self.values[state] = self.mdp.getReward(state, "exit", "")
+                else:
+                    actions = self.mdp.getPossibleActions(state)
+                    iterationValues[state] = max([self.computeQValueFromValues(state, action) for action in actions])
+            self.values = iterationValues
         
 
 
@@ -89,7 +93,7 @@ class ValueIterationAgent(ValueEstimationAgent):
         totalValue = 0
 
         for nextState, probability in actions:
-            reward = self.mdp.getRward(state, action, nextState)
+            reward = self.mdp.getReward(state, action, nextState)
             totalValue += probability*(reward + self.discount*self.values[nextState]) # end of the bellman equation
         return totalValue
 
