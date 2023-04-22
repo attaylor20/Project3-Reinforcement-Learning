@@ -160,6 +160,16 @@ class AsynchronousValueIterationAgent(ValueIterationAgent):
 
     def runValueIteration(self):
         "*** YOUR CODE HERE ***"
+        iterationStates = self.mdp.getStates()
+
+        for i in range(self.iterations):
+            state = iterationStates[i%len(iterationStates)]
+            if self.mdp.isTerminal(state):
+                self.values[state] = self.mdp.getReward(state, "exit", "")
+            else:
+                action = self.getAction(state)
+                value = self.getQValue(state, action)
+                self.values[state] = value
 
         
 
@@ -179,7 +189,74 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
         """
         self.theta = theta
         ValueIterationAgent.__init__(self, mdp, discount, iterations)
+        
 
     def runValueIteration(self):
         "*** YOUR CODE HERE ***"
 
+        # Compute predecessors of all states.
+        allStates = self.mdp.getStates()
+        # for state in allStates:
+        #     predStates = list()
+        #     for secondState in allStates:
+        #         if secondState!=state:
+        #             actions = self.mdp.getPossibleActions(secondState)
+        #             for action in actions:
+        #                 transitionActions = self.mdp.getTransitionStatesAndProbs(self, secondState, action)
+        #                 for nextState, prob in transitionActions:
+        #                     if nextState == state and prob > 0:
+        #                         predStates.add(secondState, action)
+            
+            
+        
+        # Initialize an empty priority queue.
+        pQueue = util.PriorityQueue()
+
+        #For each non-terminal state s, do:
+        for state in allStates:
+            if self.mdp.isTerminal(state):
+                # self.values[state] = self.mdp.getReward(state, "exit", "")
+                continue
+            else:
+                actions = self.mdp.getPossibleActions(state)
+                actionValue = max([self.getQValue(state, action) for action in actions])
+                diff = abs(self.values[state] - actionValue)
+                # Push s into the priority queue with priority -diff 
+                pQueue.push(state, -diff)
+        
+        for i in range(self.iterations):
+            if pQueue.isEmpty():
+                return
+            curState = pQueue.pop()
+            # if self.mdp.isTerminal(curState):
+            #     continue
+            # else:
+            curStateActions = self.mdp.getPossibleActions(curState)
+            maxCurValue = max([self.getQValue(curState, action) for action in curStateActions])
+            self.values[curState] = maxCurValue
+            curStatePreds = self.getPredecessors(curState)
+            for predState in curStatePreds:
+                predStateActions = self.mdp.getPossibleActions(predState)
+                predStateValue = max([self.getQValue(predState, action) for action in predStateActions])
+                diff = abs(self.values[predState] - predStateValue)
+                if diff > self.theta:
+                    pQueue.update(predState, -diff)
+
+        # For each predecessor p of s, do:
+
+
+
+    def getPredecessors(self, state):
+        predStates = set() #list or set?
+        allStates = self.mdp.getStates()
+        if not self.mdp.isTerminal(state):
+            for secondState in allStates:
+                if not self.mdp.isTerminal(secondState):
+                    actions = self.mdp.getPossibleActions(secondState)
+                    for action in actions:
+                        transitionActions = self.mdp.getTransitionStatesAndProbs(secondState, action)
+                        for nextState, prob in transitionActions:
+                            if nextState == state and prob > 0:
+                                predStates.add(secondState)
+        return predStates
+        
