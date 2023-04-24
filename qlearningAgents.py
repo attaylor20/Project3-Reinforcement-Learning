@@ -53,7 +53,7 @@ class QLearningAgent(ReinforcementAgent):
           or the Q node value otherwise
         """
         "*** YOUR CODE HERE ***"
-        return self.q_values[(state,action)]
+        return self.q_values[state,action]
        
 
 
@@ -67,8 +67,11 @@ class QLearningAgent(ReinforcementAgent):
         "*** YOUR CODE HERE ***"
         
         value = float("-inf")
+        legalActions = self.getLegalActions(state)
+        if len(legalActions) == 0:
+            return 0.0
         for act in self.getLegalActions(state):
-            if self.getQValue(state,act) >= value:
+            if self.getQValue(state,act) > value:
                 value = self.getQValue(state,act)
         return value
         
@@ -128,7 +131,7 @@ class QLearningAgent(ReinforcementAgent):
         #formula to find what to put as new parameters
         #Q(s,a) = Q(s,a) + a(r+gamma*) sorta
         value = ((1-self.alpha)*self.getQValue(state,action)) + (self.alpha*(reward+(self.discount*self.getQValue(nextState,self.computeActionFromQValues(nextState)))))
-        self.q_values[(state,action)] = value
+        self.q_values[state,action] = value
         
 
     def getPolicy(self, state):
@@ -183,6 +186,7 @@ class ApproximateQAgent(PacmanQAgent):
         PacmanQAgent.__init__(self, **args)
         self.weights = util.Counter()
 
+
     def getWeights(self):
         return self.weights
 
@@ -192,7 +196,10 @@ class ApproximateQAgent(PacmanQAgent):
           where * is the dotProduct operator
         """
         "*** YOUR CODE HERE ***"
+     #   value = 0
         featureVector = self.featExtractor.getFeatures(state, action)
+       # for feature in featureVector.keys():
+          #value += featureVector[feature] * self.weights[feature]
         w = self.weights
         return featureVector * w
 
@@ -201,14 +208,15 @@ class ApproximateQAgent(PacmanQAgent):
            Should update your weights based on transition
         """
         "*** YOUR CODE HERE ***"
+
         featureVector = self.featExtractor.getFeatures(state, action)
         discount = self.discount
         alpha = self.alpha
         val = self.getValue(nextState)
         qval = self.getQValue(state, action)
-        diff = reward + discount * val - qval
+        diff = (reward + (discount * val)) - qval
         for feature in featureVector:
-          self.weights[feature] += alpha * diff * featureVector[feature] 
+          self.weights[feature] += (alpha * diff * featureVector[feature] )
 
     def final(self, state):
         "Called at the end of each game."
@@ -219,4 +227,5 @@ class ApproximateQAgent(PacmanQAgent):
         if self.episodesSoFar == self.numTraining:
             # you might want to print your weights here for debugging
             "*** YOUR CODE HERE ***"
+            
             pass
